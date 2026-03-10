@@ -2,9 +2,9 @@
 
 This is a standalone **C program** that uses local binary files (`.dat`) as a database to handle:
 
-- User registration
-- Messaging
-- Voting
+* User registration
+* Messaging
+* Voting
 
 The application runs entirely on **one computer** and does **not require internet, servers, or external services**.
 
@@ -12,18 +12,53 @@ The application runs entirely on **one computer** and does **not require interne
 
 # 📁 Project Structure
 
-This project follows **Modular Programming** principles.  
+This project follows **Modular Programming** principles.
 Instead of placing everything inside one large file, the program is split into separate modules.
 
-| File | Description |
-|-----|-------------|
-| `main.c` | Main entry point of the program containing the user menu |
-| `user.h` | Header file containing the `User` structure and function declarations |
-| `register.c` | Handles user registration and viewing stored users |
-| `users.dat` | Auto-generated binary database storing user data |
+| File           | Description                                                                               |
+| -------------- | ----------------------------------------------------------------------------------------- |
+| `main.c`       | Main entry point of the program containing the user menu                                  |
+| `user.h`       | Header file containing shared structures (`User` and `Message`) and function declarations |
+| `register.c`   | Handles user registration and viewing stored users                                        |
+| `message.c`    | Handles sending messages and displaying stored messages                                   |
+| `users.dat`    | Auto-generated binary database storing user data                                          |
+| `messages.dat` | Auto-generated binary database storing sent messages                                      |
 
-⚠️ **Important:**  
-Do **not open `.dat` files in a text editor**. They are stored in **raw binary format**, not readable text.
+⚠️ **Important:**
+Do **not open `.dat` files in a a text editor**. They are stored in **raw binary format**, not readable text.
+
+---
+
+# 💬 Messaging System
+
+The messaging module allows registered users to send messages to each other using their **user IDs**.
+
+Each message includes the following information:
+
+* **Chat ID** – a unique identifier automatically generated for every message
+* **Sender ID** – the ID of the user sending the message
+* **Receiver ID** – the ID of the user receiving the message
+* **Message text** – the content of the message
+* **Timestamp** – the exact date and time the message was sent
+
+The system also verifies that the **sender and receiver exist and are active users** before allowing a message to be sent.
+
+Messages can be viewed later through the program menu.
+
+---
+
+# 💾 Data Storage
+
+The program stores information using **binary database files**.
+
+| File           | Description                        |
+| -------------- | ---------------------------------- |
+| `users.dat`    | Stores registered user accounts    |
+| `messages.dat` | Stores messages sent between users |
+
+These files are automatically created the first time the program writes data.
+
+Binary storage allows the program to **save and retrieve structured data efficiently**.
 
 ---
 
@@ -56,7 +91,7 @@ cd your-project-folder
 Run:
 
 ```bash
-gcc main.c register.c -o app
+gcc main.c register.c message.c -o app
 ```
 
 This creates an executable file named:
@@ -77,12 +112,12 @@ app.exe
 
 # ➕ Adding New Modules
 
-If you create a new module file (for example `send.c` for messaging), you must include it when compiling.
+If you create a new module file, you must include it when compiling.
 
-Example:
+Example: **search or  voting**
 
 ```bash
-gcc main.c register.c send.c -o app
+gcc main.c register.c message.c search.c -o app
 ```
 
 ---
@@ -197,15 +232,15 @@ Copyright (C) Free Software Foundation
 
 You can now:
 
-- Compile C programs
-- Build modular projects
-- Work with binary databases
-- Extend the chat and voting system
+* Compile C programs
+* Build modular projects
+* Work with binary databases
+* Extend the chat and voting system
 
 Example compile command:
 
 ```bash
-gcc main.c register.c -o app
+gcc main.c register.c message.c -o app
 ```
 
 Run:
@@ -213,5 +248,3 @@ Run:
 ```bash
 .\app.exe
 ```
-
----
