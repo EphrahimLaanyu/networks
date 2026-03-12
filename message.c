@@ -4,16 +4,7 @@
 #include <time.h>
 #include "user.h"
 
-/*
--------------------------------------------------------
-FUNCTION: user_exists()
--------------------------------------------------------
-Checks if a user with a given ID exists and is active.
-Returns:
-1 -> user exists
-0 -> user not found
-*/
-
+/*FUNCTION: user_exists()*/
 int user_exists(int id) {
 
     FILE *file = fopen("users.dat", "rb");
@@ -38,20 +29,7 @@ int user_exists(int id) {
 
 
 
-/*
--------------------------------------------------------
-FUNCTION: send_message()
--------------------------------------------------------
-Allows one registered user to send a message to another.
-
-Steps:
-1. Ask for sender and receiver IDs
-2. Verify both users exist
-3. Generate chat ID
-4. Generate timestamp
-5. Save message to messages.dat
-*/
-
+/* FUNCTION: send_message() Allows one registered user to send a message to another.*/
 void send_message() {
 
     FILE *file;
@@ -80,11 +58,7 @@ void send_message() {
     fgets(msg.message, sizeof(msg.message), stdin);
 
 
-    /*
-    -------------------------------------------------------
-    Open messages database
-    -------------------------------------------------------
-    */
+    /*Open messages database*/
 
     file = fopen("messages.dat", "ab+");
 
@@ -94,11 +68,7 @@ void send_message() {
     }
 
 
-    /*
-    -------------------------------------------------------
-    Generate Chat ID
-    -------------------------------------------------------
-    */
+    /*Generate Chat ID*/
 
     fseek(file, 0, SEEK_END);
     long file_size = ftell(file);
@@ -106,11 +76,7 @@ void send_message() {
     msg.chat_id = (file_size / sizeof(Message)) + 1;
 
 
-    /*
-    -------------------------------------------------------
-    Generate Timestamp
-    -------------------------------------------------------
-    */
+    /*Generate Timestamp*/
 
     time_t current_time = time(NULL);
     struct tm *time_info = localtime(&current_time);
@@ -125,11 +91,7 @@ void send_message() {
             time_info->tm_sec);
 
 
-    /*
-    -------------------------------------------------------
-    Save message to file
-    -------------------------------------------------------
-    */
+    /* Save message to file*/
 
     fwrite(&msg, sizeof(Message), 1, file);
 
@@ -141,10 +103,7 @@ void send_message() {
 
 
 /*
--------------------------------------------------------
-FUNCTION: view_messages()
--------------------------------------------------------
-Displays all stored messages from messages.dat
+FUNCTION: view_messages() Displays all stored messages from messages.dat
 */
 
 void view_messages() {
@@ -156,18 +115,40 @@ void view_messages() {
         return;
     }
 
+    int sender_id;
+    int found = 0;
     Message msg;
 
-    printf("\n--- Stored Messages ---\n");
+    printf("\n--- View Messages by Sender ---\n");
+    printf("Enter Sender ID: ");
+    scanf("%d", &sender_id);
+
+    // Optional: verify sender exists
+    if (!user_exists(sender_id)) {
+        printf("Error: Sender does not exist or is inactive.\n");
+        fclose(file);
+        return;
+    }
+
+    printf("\nMessages sent by User ID %d:\n", sender_id);
+    printf("---------------------------------\n");
 
     while (fread(&msg, sizeof(Message), 1, file)) {
 
-        printf("\nChat ID: %d\n", msg.chat_id);
-        printf("Sender ID: %d\n", msg.sender_id);
-        printf("Receiver ID: %d\n", msg.receiver_id);
-        printf("Message: %s", msg.message);
-        printf("Timestamp: %s\n", msg.timestamp);
-        printf("----------------------------\n");
+        if (msg.sender_id == sender_id) {
+
+            printf("\nChat ID: %d\n", msg.chat_id);
+            printf("Receiver ID: %d\n", msg.receiver_id);
+            printf("Message: %s", msg.message);
+            printf("Timestamp: %s\n", msg.timestamp);
+            printf("----------------------------\n");
+
+            found = 1;
+        }
+    }
+
+    if (!found) {
+        printf("No messages found from this sender.\n");
     }
 
     fclose(file);

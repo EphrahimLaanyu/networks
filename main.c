@@ -2,20 +2,6 @@
 #include <stdio.h>
 #include "user.h"   // Gives access to User struct and all declared functions
 
-/*
--------------------------------------------------------
-MAIN FUNCTION
--------------------------------------------------------
-This is the main entry point of the program.
-
-The menu allows users to:
-1. Register new users
-2. View all registered users
-3. Search for a user
-4. Send messages
-5. View messages
-6. Exit the program
-*/
 
 int main() {
 
@@ -33,13 +19,6 @@ int main() {
 
         scanf("%d", &choice);
 
-        /*
-        -------------------------------------------------------
-        SWITCH MENU LOGIC
-        -------------------------------------------------------
-        Each menu option calls a different function
-        implemented in separate modules.
-        */
 
         switch(choice) {
 
