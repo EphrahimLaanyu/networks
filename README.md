@@ -21,7 +21,9 @@ Instead of placing everything inside one large file, the program is split into s
 | `user.h`       | Header file containing shared structures (`User` and `Message`) and function declarations |
 | `register.c`   | Handles user registration and viewing stored users                                        |
 | `message.c`    | Handles sending messages and displaying stored messages                                   |
-| `users.dat`    | Auto-generated binary database storing user data                                          |
+| `users.dat`    | Auto-generated binary database storing user 
+search                                   |
+| `search.c`    | Search for users and messages data                                          |
 | `messages.dat` | Auto-generated binary database storing sent messages                                      |
 
 ⚠️ **Important:**
