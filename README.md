@@ -43,7 +43,7 @@ Each message includes the following information:
 
 The system also verifies that the **sender and receiver exist and are active users** before allowing a message to be sent.
 
-Messages can be viewed later through the program menu.
+Messages can be viewed later through the program menu.where the user is prompted the sender id and the message sent by that user is displayed.
 
 ---
 
