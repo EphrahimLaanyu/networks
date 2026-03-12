@@ -4,7 +4,6 @@
 #include <time.h>
 #include "user.h"
 
-/*FUNCTION: user_exists()*/
 int user_exists(int id) {
 
     FILE *file = fopen("users.dat", "rb");
@@ -29,7 +28,6 @@ int user_exists(int id) {
 
 
 
-/* FUNCTION: send_message() Allows one registered user to send a message to another.*/
 void send_message() {
 
     FILE *file;
