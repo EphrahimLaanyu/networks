@@ -35,5 +35,9 @@ MESSAGING FUNCTIONS
 void send_message();
 void view_messages();
 
+/* SEARCH FUNCTIONS */
+void search_user_by_username();
+void search_messages_by_keyword();
+
 
 #endif

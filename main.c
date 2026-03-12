@@ -15,6 +15,8 @@ int main() {
         printf("3. Send Message\n");
         printf("4. View Messages\n");
         printf("5. Exit\n");
+        printf("6. Search Users\n");
+        printf("7. Search Messages\n");
         printf("Choose an option: ");
 
         scanf("%d", &choice);
@@ -44,6 +46,13 @@ int main() {
             case 5:
                 printf("\nExiting program...\n");
                 break;
+            
+            case 6:
+                search_user_by_username();
+                break;
+                
+            case 7:
+                search_messages_by_keyword();    
 
             default:
                 printf("\nInvalid choice. Try again.\n");
