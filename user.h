@@ -2,18 +2,7 @@
 #ifndef USER_H
 #define USER_H
 
-/*
--------------------------------------------------------
-USER STRUCTURE
--------------------------------------------------------
-This structure represents a registered user in the system.
-
-Fields:
-id         -> Unique ID assigned automatically during registration
-username   -> The user's chosen name (max 49 characters + null terminator)
-is_active  -> Indicates if the user is active (1) or deregistered (0)
-*/
-
+// user structure
 typedef struct {
     int id;
     char username[50];
@@ -21,20 +10,7 @@ typedef struct {
 } User;
 
 
-/*
--------------------------------------------------------
-MESSAGE STRUCTURE
--------------------------------------------------------
-This structure represents a message sent between users.
-
-Fields:
-chat_id      -> Unique ID for each message
-sender_id    -> ID of the user sending the message
-receiver_id  -> ID of the user receiving the message
-message      -> The actual message text
-timestamp    -> Date and time the message was sent
-*/
-
+//message structure
 typedef struct {
     int chat_id;
     int sender_id;
@@ -45,10 +21,7 @@ typedef struct {
 
 
 /*
--------------------------------------------------------
 USER MANAGEMENT FUNCTIONS
--------------------------------------------------------
-These functions are implemented in register.c
 */
 
 void register_user();
@@ -56,10 +29,7 @@ void view_users();
 
 
 /*
--------------------------------------------------------
 MESSAGING FUNCTIONS
--------------------------------------------------------
-These functions will be implemented in message.c
 */
 
 void send_message();
