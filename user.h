@@ -26,7 +26,7 @@ USER MANAGEMENT FUNCTIONS
 
 void register_user();
 void view_users();
-
+void deregister_user(); // <-- This is the missing line!
 
 /*
 MESSAGING FUNCTIONS
