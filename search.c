@@ -2,15 +2,11 @@
 #include <string.h>
 #include "user.h"
 
-// Helper function to remove newline from fgets input
 void trim_newline(char *str)
 {
 	str[strcspn(str, "\n")] = 0;
 }
 
-/* SEARCH USERS BY USERNAME
-	 Uses strstr to find partial matches (e.g., "chen" finds "chengo")
-*/
 void search_user_by_username()
 {
 	FILE *file = fopen("users.dat", "rb");
@@ -51,9 +47,6 @@ void search_user_by_username()
 	fclose(file);
 }
 
-/* SEARCH MESSAGES BY CONTENT
-	 Filters the messages.dat file for a specific keyword
-*/
 void search_messages_by_keyword()
 {
 	FILE *file = fopen("messages.dat", "rb");

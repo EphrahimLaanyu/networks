@@ -49,7 +49,6 @@ int get_next_id(const char *filename, size_t record_size) {
     return next_id;
 }
 
-// Uses read_record for O(1) lookup instead of scanning
 int user_exists(int id) {
     User temp;
     if (!read_record("users.dat", id - 1, &temp, sizeof(User))) {
@@ -58,7 +57,6 @@ int user_exists(int id) {
     return (temp.id == id && temp.is_active == 1);
 }
 
-// Looks up a message by chat_id using direct seek
 int find_message(int chat_id, Message *out) {
     if (!read_record("messages.dat", chat_id - 1, out, sizeof(Message))) {
         return 0;

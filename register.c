@@ -5,13 +5,12 @@
 
 void register_user() {
     User new_user;
-    memset(&new_user, 0, sizeof(User));   // zero all fields including id
+    memset(&new_user, 0, sizeof(User));   
     new_user.is_active = 1;
 
     printf("Enter a username: ");
     scanf("%49s", new_user.username);
 
-    // Calculate ID first, stamp it into the struct, THEN write to disk
     new_user.id = get_next_id("users.dat", sizeof(User));
 
     if (append_record("users.dat", &new_user, sizeof(User)) == -1) {
