@@ -48,3 +48,42 @@ void view_users() {
 
     fclose(file);
 }
+
+void deregister_user() {
+    FILE *file = fopen("users.dat", "rb+"); // Read and update mode
+    if (file == NULL) {
+        printf("\nError: Could not open database file! Make sure users exist first.\n");
+        return;
+    }
+
+    int target_id;
+    printf("Enter the ID of the user you want to deregister: ");
+    scanf("%d", &target_id);
+
+    User temp_user;
+    
+    // Calculate the exact byte offset of the target user in the file
+    long offset = (target_id - 1) * sizeof(User);
+    
+    fseek(file, 0, SEEK_END);
+    long file_size = ftell(file);
+
+    // Check if the ID exists within the file's bounds
+    if (offset >= 0 && offset < file_size) {
+        fseek(file, offset, SEEK_SET); // Jump to the user's record
+        fread(&temp_user, sizeof(User), 1, file);
+        
+        if (temp_user.is_active == 1) {
+            temp_user.is_active = 0; // Toggle status
+            fseek(file, offset, SEEK_SET); // Jump back to overwrite the record
+            fwrite(&temp_user, sizeof(User), 1, file);
+            printf("\nSuccess: User '%s' (ID: %d) has been deregistered.\n", temp_user.username, temp_user.id);
+        } else {
+            printf("\nNotice: User '%s' (ID: %d) is already inactive.\n", temp_user.username, target_id);
+        }
+    } else {
+        printf("\nError: User with ID %d not found.\n", target_id);
+    }
+
+    fclose(file);
+}
