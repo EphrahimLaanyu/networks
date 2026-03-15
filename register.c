@@ -1,48 +1,45 @@
 // register.c
 #include <stdio.h>
 #include <string.h>
-#include "user.h" // Import our custom header!
+#include "user.h"
 
 void register_user() {
-    FILE *file = fopen("users.dat", "ab+"); 
-    if (file == NULL) {
-        printf("Error: Could not open database file!\n");
-        return;
-    }
-
     User new_user;
-    
-    fseek(file, 0, SEEK_END);
-    long file_size = ftell(file);
-    new_user.id = (file_size / sizeof(User)) + 1;
+    memset(&new_user, 0, sizeof(User));   // zero all fields including id
     new_user.is_active = 1;
 
     printf("Enter a username: ");
     scanf("%49s", new_user.username);
 
-    fwrite(&new_user, sizeof(User), 1, file);
-    printf("\nSuccess! User '%s' has been registered with ID %d.\n", new_user.username, new_user.id);
+    // Calculate ID first, stamp it into the struct, THEN write to disk
+    new_user.id = get_next_id("users.dat", sizeof(User));
 
-    fclose(file);
+    if (append_record("users.dat", &new_user, sizeof(User)) == -1) {
+        printf("Error: Could not save user.\n");
+        return;
+    }
+
+    printf("\nSuccess! User '%s' has been registered with ID %d.\n",
+           new_user.username, new_user.id);
 }
 
 void view_users() {
-    FILE *file = fopen("users.dat", "rb"); 
+    FILE *file = fopen("users.dat", "rb");
     if (file == NULL) {
         printf("\nNo users found. The database is empty or hasn't been created yet.\n");
         return;
     }
 
-    User temp_user; 
-    
+    User temp_user;
+
     printf("\n--- Registered Users ---\n");
     printf("ID\tStatus\t\tUsername\n");
     printf("----------------------------------------\n");
 
     while (fread(&temp_user, sizeof(User), 1, file)) {
-        printf("%d\t%s\t\t%s\n", 
-               temp_user.id, 
-               temp_user.is_active ? "Active" : "Inactive", 
+        printf("%d\t%s\t\t%s\n",
+               temp_user.id,
+               temp_user.is_active ? "Active" : "Inactive",
                temp_user.username);
     }
 
@@ -50,7 +47,7 @@ void view_users() {
 }
 
 void deregister_user() {
-    FILE *file = fopen("users.dat", "rb+"); // Read and update mode
+    FILE *file = fopen("users.dat", "rb+");
     if (file == NULL) {
         printf("\nError: Could not open database file! Make sure users exist first.\n");
         return;
@@ -61,25 +58,24 @@ void deregister_user() {
     scanf("%d", &target_id);
 
     User temp_user;
-    
-    // Calculate the exact byte offset of the target user in the file
     long offset = (target_id - 1) * sizeof(User);
-    
+
     fseek(file, 0, SEEK_END);
     long file_size = ftell(file);
 
-    // Check if the ID exists within the file's bounds
     if (offset >= 0 && offset < file_size) {
-        fseek(file, offset, SEEK_SET); // Jump to the user's record
+        fseek(file, offset, SEEK_SET);
         fread(&temp_user, sizeof(User), 1, file);
-        
+
         if (temp_user.is_active == 1) {
-            temp_user.is_active = 0; // Toggle status
-            fseek(file, offset, SEEK_SET); // Jump back to overwrite the record
+            temp_user.is_active = 0;
+            fseek(file, offset, SEEK_SET);
             fwrite(&temp_user, sizeof(User), 1, file);
-            printf("\nSuccess: User '%s' (ID: %d) has been deregistered.\n", temp_user.username, temp_user.id);
+            printf("\nSuccess: User '%s' (ID: %d) has been deregistered.\n",
+                   temp_user.username, temp_user.id);
         } else {
-            printf("\nNotice: User '%s' (ID: %d) is already inactive.\n", temp_user.username, target_id);
+            printf("\nNotice: User '%s' (ID: %d) is already inactive.\n",
+                   temp_user.username, target_id);
         }
     } else {
         printf("\nError: User with ID %d not found.\n", target_id);

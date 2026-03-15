@@ -1,252 +1,216 @@
-# Standalone Chat & Voting Application
+# One-on-One Chatting Application
 
-This is a standalone **C program** that uses local binary files (`.dat`) as a database to handle:
-
-* User registration
-* Messaging
-* Voting
+A standalone **C program** that uses local binary files (`.dat`) as a database to handle user registration, one-on-one messaging with reply support, and user/message search.
 
 The application runs entirely on **one computer** and does **not require internet, servers, or external services**.
 
 ---
 
-# 📁 Project Structure
+## Project Structure
 
-This project follows **Modular Programming** principles.
-Instead of placing everything inside one large file, the program is split into separate modules.
+This project follows **Modular Programming** principles. Each file has a single, clearly defined responsibility.
 
-| File           | Description                                                                               |
-| -------------- | ----------------------------------------------------------------------------------------- |
-| `main.c`       | Main entry point of the program containing the user menu                                  |
-| `user.h`       | Header file containing shared structures (`User` and `Message`) and function declarations |
-| `register.c`   | Handles user registration and viewing stored users                                        |
-| `message.c`    | Handles sending messages and displaying stored messages                                   |
-| `users.dat`    | Auto-generated binary database storing user 
-search                                   |
-| `search.c`    | Search for users and messages data                                          |
-| `messages.dat` | Auto-generated binary database storing sent messages                                      |
+| File            | Description                                                                                      |
+| --------------- | ------------------------------------------------------------------------------------------------ |
+| `main.c`        | Entry point. Presents the main menu and dispatches choices to the appropriate module.            |
+| `user.h`        | Shared header containing the `User` and `Message` structs and all function prototypes.           |
+| `register.c`    | Handles user registration, listing all users, and soft-deregistration.                          |
+| `message.c`     | Handles sending messages, replying to messages, and viewing sent and received messages.          |
+| `search.c`      | Handles partial username search and keyword-based message search.                               |
+| `utils.c`       | Shared utility layer — generic file I/O functions reusable across modules.                      |
+| `users.dat`     | Auto-generated binary file storing registered user records.                                     |
+| `messages.dat`  | Auto-generated binary file storing sent messages and replies.                                   |
 
-⚠️ **Important:**
-Do **not open `.dat` files in a a text editor**. They are stored in **raw binary format**, not readable text.
+> ⚠️ **Do not open `.dat` files in a text editor.** They are stored in raw binary format and will appear as unreadable characters.
 
 ---
 
-# 💬 Messaging System
+## Data Structures
 
-The messaging module allows registered users to send messages to each other using their **user IDs**.
+Both structures are defined in `user.h` and shared across all modules.
 
-Each message includes the following information:
+### User
+| Field       | Type       | Description                                                                 |
+| ----------- | ---------- | --------------------------------------------------------------------------- |
+| `id`        | `int`      | Unique identifier. Automatically assigned at registration.                  |
+| `username`  | `char[50]` | The user's chosen display name. Maximum 49 characters.                      |
+| `is_active` | `int`      | `1` = active, `0` = deregistered. Deregistration does not erase the record. |
 
-* **Chat ID** – a unique identifier automatically generated for every message
-* **Sender ID** – the ID of the user sending the message
-* **Receiver ID** – the ID of the user receiving the message
-* **Message text** – the content of the message
-* **Timestamp** – the exact date and time the message was sent
-
-The system also verifies that the **sender and receiver exist and are active users** before allowing a message to be sent.
-
-Messages can be viewed later through the program menu.where the user is prompted the sender id and the message sent by that user is displayed.
-
----
-
-# 💾 Data Storage
-
-The program stores information using **binary database files**.
-
-| File           | Description                        |
-| -------------- | ---------------------------------- |
-| `users.dat`    | Stores registered user accounts    |
-| `messages.dat` | Stores messages sent between users |
-
-These files are automatically created the first time the program writes data.
-
-Binary storage allows the program to **save and retrieve structured data efficiently**.
+### Message
+| Field          | Type        | Description                                                                              |
+| -------------- | ----------- | ---------------------------------------------------------------------------------------- |
+| `chat_id`      | `int`       | Unique message identifier. Automatically assigned at send time.                          |
+| `sender_id`    | `int`       | User ID of the sender. Must be an active registered user.                                |
+| `receiver_id`  | `int`       | User ID of the receiver. Must be an active registered user.                              |
+| `reply_to_id`  | `int`       | `0` for original messages. Set to the `chat_id` of the parent message for replies.      |
+| `message`      | `char[256]` | The message content. Maximum 255 characters.                                             |
+| `timestamp`    | `char[30]`  | Date and time the message was sent. Format: `DD-MM-YYYY HH:MM:SS`.                      |
 
 ---
 
-# 🚀 How to Compile and Run
+## Features
 
-Because the project contains **multiple C files**, you must compile them together using the terminal.
+### User Management
+- Register a new user with a unique username
+- View all registered users with their ID and status
+- Deregister a user (soft-delete — the record is kept, the account is marked inactive)
 
-### Step 1: Open the VS Code Terminal
+### Messaging
+- Send a message to any active registered user
+- Reply to an existing message by Chat ID — the original message is shown for context
+- View all messages sent **and** received by a given user
 
-Press:
+### Search
+- Search for users by partial username match
+- Search all messages by keyword
 
+---
+
+## Utility Layer (`utils.c`)
+
+`utils.c` provides generic, struct-agnostic file functions shared across all modules.
+
+| Function          | Description                                                                    |
+| ----------------- | ------------------------------------------------------------------------------ |
+| `read_record()`   | Reads one record at a given index from a binary file using a direct byte seek. |
+| `append_record()` | Appends a record to a binary file and returns the new record's ID.             |
+| `get_next_id()`   | Returns the next available ID for a file without writing.                      |
+| `find_username()` | Resolves a user ID to a username string using `read_record()`.                 |
+| `user_exists()`   | Returns `1` if a user ID exists and is active, `0` otherwise.                  |
+| `find_message()`  | Retrieves a message record by Chat ID using a direct byte seek.                |
+
+These functions accept a filename, a `void*` pointer, and a record size — they have no dependency on the `User` or `Message` structs directly, making them reusable in other applications.
+
+---
+
+## Data Storage
+
+| File            | Contents                          |
+| --------------- | --------------------------------- |
+| `users.dat`     | Sequential `User` records         |
+| `messages.dat`  | Sequential `Message` records      |
+
+Files are created automatically the first time data is written. Records are fixed-size, so any record can be located by a direct offset calculation:
+
+```
+offset = (id - 1) * sizeof(StructType)
+```
+
+This gives O(1) lookup for user validation and message retrieval.
+
+---
+
+## How to Compile and Run
+
+Because the project uses multiple `.c` files, all of them must be compiled together.
+
+### Step 1 — Open the terminal
+
+In VS Code, press:
 ```
 Ctrl + `
 ```
 
----
-
-### Step 2: Make Sure You Are in the Project Folder
-
-Example:
+### Step 2 — Navigate to the project folder
 
 ```bash
 cd your-project-folder
 ```
 
----
-
-### Step 3: Compile the Program
-
-Run:
+### Step 3 — Compile
 
 ```bash
-gcc main.c register.c message.c -o app
+gcc main.c register.c message.c search.c utils.c -o chat
 ```
 
-This creates an executable file named:
+This produces an executable named `chat` (or `chat.exe` on Windows).
 
-```
-app.exe
-```
+### Step 4 — Run
 
----
-
-### Step 4: Run the Program
-
+**Windows:**
 ```bash
-.\app.exe
+.\chat.exe
 ```
 
----
-
-# ➕ Adding New Modules
-
-If you create a new module file, you must include it when compiling.
-
-Example: **search or  voting**
-
+**Linux / macOS:**
 ```bash
-gcc main.c register.c message.c search.c -o app
+./chat
 ```
+
+> ⚠️ If you change the `User` or `Message` struct (e.g. add a new field), delete `users.dat` and `messages.dat` before running again. The binary layout of existing records will not match the new struct size and will produce corrupted output.
 
 ---
 
-# 🛠️ Windows C Compiler Setup Guide
+## Adding New Modules
 
-If you see an error like:
+If you add a new `.c` file, include it in the compile command.
 
+Example — adding a voting module:
+```bash
+gcc main.c register.c message.c search.c utils.c voting.c -o chat
+```
+
+The new module should `#include "user.h"` and declare any new functions in `user.h` under an appropriate section.
+
+---
+
+## Windows GCC Setup
+
+If you see:
 ```
 gcc is not recognized
 ```
 
-it means **GCC is not installed on your system**.
+GCC is not installed. Follow the steps below.
 
-Follow the steps below.
+### Step 1 — Download MSYS2
 
----
+Go to https://msys2.org and download `msys2-x86_64-latest.exe`. Run the installer with default settings.
 
-# Step 1: Download MSYS2
+### Step 2 — Install GCC
 
-Go to the official website:
-
-https://msys2.org
-
-Download:
-
-```
-msys2-x86_64-latest.exe
-```
-
-Run the installer and click **Next** through the default installation steps.
-
----
-
-# Step 2: Install GCC
-
-After installation, the **MSYS2 terminal** will open automatically.
-
-Paste the following command:
-
+When the MSYS2 terminal opens, run:
 ```bash
 pacman -S mingw-w64-ucrt-x86_64-gcc
 ```
+Type `Y` when prompted and wait for installation to complete.
 
-When prompted:
+### Step 3 — Add GCC to PATH
 
-```
-Proceed with installation? [Y/n]
-```
-
-Type:
-
-```
-Y
-```
-
-Then press **Enter**.
-
-Wait for the installation to finish.
-
----
-
-# Step 3: Add GCC to Windows PATH
-
-This step allows **Windows and VS Code to find the compiler**.
-
-1. Open the **Start Menu**
-2. Search for **Environment Variables**
-3. Click **Edit the system environment variables**
-4. Click **Environment Variables**
-5. In the **User variables** section, find `Path`
-6. Click **Edit**
-7. Click **New**
-8. Add the following path:
-
+1. Open **Start Menu** and search for **Environment Variables**
+2. Click **Edit the system environment variables**
+3. Click **Environment Variables**
+4. Under **User variables**, select `Path` and click **Edit**
+5. Click **New** and add:
 ```
 C:\msys64\ucrt64\bin
 ```
+6. Click **OK** on all windows.
 
-9. Click **OK** on all windows to save changes.
+### Step 4 — Restart VS Code
 
----
+Close and reopen VS Code completely for the PATH change to take effect.
 
-# Step 4: Restart VS Code
-
-Close **VS Code completely** and reopen it.
-
-This step is **required** for the PATH update to take effect.
-
----
-
-# Step 5: Verify GCC Installation
-
-Open the VS Code terminal and run:
+### Step 5 — Verify
 
 ```bash
 gcc --version
 ```
 
-If the installation was successful, you will see the GCC version information.
-
-Example:
-
-```
-gcc (Rev...) 13.x.x
-Copyright (C) Free Software Foundation
-```
+You should see version information printed, confirming GCC is ready.
 
 ---
 
-# ✅ Ready to Develop
+## Menu Options
 
-You can now:
-
-* Compile C programs
-* Build modular projects
-* Work with binary databases
-* Extend the chat and voting system
-
-Example compile command:
-
-```bash
-gcc main.c register.c message.c -o app
 ```
-
-Run:
-
-```bash
-.\app.exe
+1. Register User
+2. View Users
+3. Deregister User
+4. Send Message
+5. Reply to Message
+6. View Messages
+7. Search Users
+8. Search Messages
+9. Exit
 ```
